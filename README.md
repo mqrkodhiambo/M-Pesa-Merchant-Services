@@ -1,39 +1,13 @@
-package com.fintech.portfolio.service
+# M-Pesa Merchant Settlement Service 
 
-import kotlinx.serialization.Serializable
-import java.time.Instant
+A lightweight, production-ready backend component built in **Kotlin** designed to ingest, validate, and settle real-time mobile money payment notifications originating from Safaricom's M-Pesa API gateways.
 
-@Serializable
-data class MpesaCallbackPayload(
-    val merchantRequestID: String,
-    val checkoutRequestID: String,
-    val resultCode: Int,
-    val resultDesc: String,
-    val amount: Double?,
-    val mpesaReceiptNumber: String?,
-    val phoneNumber: Long?
-)
+##  System Architecture & Mechanics
+- **Webhook Ingestion:** Exposes an isolated service architecture to securely receive incoming JSON validation strings from external payment processing arrays.
+- **Data Integration:** Utilizes explicit data serialization modeling to securely abstract transactional identifiers, customer billing details, and platform resolution codes.
+- **Idempotency Protection:** Intended to align with robust ledger architectures to prevent duplicate transaction accounting over unstable network states.
 
-class PaymentSettlementEngine {
-    
-    // Processes incoming webhooks from payment gateways like Cellulant or Safaricom Daraja
-    fun processIncomingCallback(payload: MpesaCallbackPayload): Boolean {
-        if (payload.resultCode == 0) {
-            // Log successful settlement internally 
-            println("SUCCESS: Payment [${payload.mpesaReceiptNumber}] verified for KES ${payload.amount}")
-            updateInternalLedger(payload.checkoutRequestID, "SETTLED", Instant.now())
-            return true
-        } else {
-            // Log failed transactions with descriptive tracking codes
-            println("FAILED: Transaction rejected with code ${payload.resultCode} - ${payload.resultDesc}")
-            updateInternalLedger(payload.checkoutRequestID, "FAILED", Instant.now())
-            return false
-        }
-    }
-
-    private fun updateInternalLedger(requestId: String, status: String, timestamp: Instant) {
-        // Architecture step: This would trigger your SQLDelight or Room DB repositories
-        println("Ledger Updated: Request ID $requestId set to status $status at $timestamp")
-    }
-}
-
+##  Key Framework Capabilities
+- Evaluates Safaricom transaction response parameters asynchronously.
+- Isolates failed codes (`ResultCode != 0`) instantly to prevent premature resource provisioning.
+- Separates network payload transfers cleanly from downstream application business logic.
